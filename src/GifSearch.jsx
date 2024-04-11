@@ -25,16 +25,34 @@ const GifImage = styled("img")({
 const GifSearch = () => {
   const [gifNumber, setGifNumber] = useState("");
   const [gifUrl, setGifUrl] = useState("");
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const response = await axios.get(
-        `https://g.tenor.com/v1/search?q=excited&key=LIVDSRZULELA&limit=${gifNumber}`
+        `{APILINK-REEMPLAZAR}/api`
       );
-      setGifUrl(response.data.results[gifNumber - 1].media[0].gif.url);
+
+      if (
+        response.data && 
+        response.data.results &&
+        response.data.results.length > 0
+      ) {
+        const randomIndex = Math.floor(
+          Math.random() * response.data.results.length
+        );
+        const randomGifUrl =
+          response.data.results[randomIndex].media[0].tinygif.url;
+
+        setGifUrl(randomGifUrl);
+        setError("");
+      } else {
+        setError("La estructura de los datos de la respuesta no es válida.");
+      }
     } catch (error) {
       console.error(error);
+      setError("Hubo un error al obtener el GIF.");
     }
   };
 
@@ -73,10 +91,22 @@ const GifSearch = () => {
               required
               margin="normal"
             />
-            <Button type="submit" variant="contained" color="primary" fullWidth>
-              Buscar
-            </Button>
+            <Box mt={2}>
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                fullWidth
+              >
+                Buscar
+              </Button>
+            </Box>
           </form>
+          {error && (
+            <Typography variant="body1" color="error" align="center" mt={2}>
+              {error}
+            </Typography>
+          )}
           {gifUrl && (
             <GifContainer>
               <GifImage src={gifUrl} alt="GIF" />
